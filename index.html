@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🔮 ဗေဒင် · Bay Din</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --pink:#ff5c8a; --purple:#7b4dff; --dark:#1a1230; --soft:#f7f2ff;
+  }
+  body{
+    font-family:"Padauk","Segoe UI",system-ui,sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:20px;
+    background:linear-gradient(135deg,#7b4dff 0%,#ff5c8a 100%);
+    color:var(--dark);
+  }
+  .card{
+    width:100%; max-width:440px; background:#fff; border-radius:24px;
+    box-shadow:0 20px 60px rgba(0,0,0,.3); overflow:hidden;
+  }
+  .head{
+    background:linear-gradient(135deg,#ff5c8a,#7b4dff);
+    color:#fff; padding:28px 24px 22px; text-align:center;
+  }
+  .head h1{ font-size:26px; letter-spacing:.5px; }
+  .head p{ font-size:14px; opacity:.9; margin-top:6px; }
+  .body{ padding:24px; }
+  label{ display:block; font-size:14px; font-weight:700; margin:14px 0 6px; color:#444; }
+  input{
+    width:100%; padding:13px 14px; border:2px solid #e7e0f5; border-radius:12px;
+    font-size:15px; font-family:inherit; outline:none; transition:.2s;
+  }
+  input:focus{ border-color:var(--purple); box-shadow:0 0 0 3px rgba(123,77,255,.15); }
+  button{
+    width:100%; margin-top:22px; padding:15px; border:none; border-radius:14px;
+    background:linear-gradient(135deg,#ff5c8a,#7b4dff); color:#fff;
+    font-size:17px; font-weight:700; font-family:inherit; cursor:pointer;
+    transition:transform .15s, box-shadow .2s;
+    box-shadow:0 8px 20px rgba(123,77,255,.35);
+  }
+  button:hover{ transform:translateY(-2px); box-shadow:0 12px 26px rgba(123,77,255,.45); }
+  button:active{ transform:translateY(0); }
+  .result{
+    margin-top:24px; padding:22px; border-radius:18px; text-align:center;
+    background:var(--soft); display:none; animation:pop .4s ease;
+  }
+  @keyframes pop{ from{opacity:0; transform:scale(.9);} to{opacity:1; transform:scale(1);} }
+  .verdict{ font-size:40px; font-weight:800; margin:6px 0; }
+  .verdict.rs{ color:var(--pink); }
+  .verdict.single{ color:var(--purple); }
+  .meter{ height:12px; background:#e7e0f5; border-radius:99px; overflow:hidden; margin:14px 0 6px; }
+  .meter > div{ height:100%; border-radius:99px; background:linear-gradient(90deg,#ff5c8a,#7b4dff); width:0; transition:width 1s ease; }
+  .pct{ font-size:13px; color:#777; }
+  .msg{ margin-top:14px; font-size:15px; line-height:1.7; color:#3a2f55; }
+  .advice{ margin-top:12px; font-size:14px; line-height:1.7; color:#555;
+    background:#fff; border:1px dashed #d9cdf5; border-radius:12px; padding:12px; }
+  .advice b{ color:var(--purple); }
+  .birth{ margin-top:16px; text-align:left; }
+  .birth-zodiac{ font-size:15px; font-weight:700; color:#3a2f55; text-align:center;
+    background:#fff; border:1px dashed #d9cdf5; border-radius:12px; padding:10px; margin-bottom:10px; }
+  .birth-sec{ background:#fff; border-radius:12px; padding:12px 14px; margin-top:10px;
+    font-size:14px; line-height:1.7; color:#3a2f55; border-left:4px solid var(--pink); }
+  .birth-sec h4{ font-size:14px; color:var(--purple); margin-bottom:6px; }
+  .birth-sec ul{ margin:0; padding-left:18px; }
+  .birth-sec li{ margin:4px 0; }
+  .birth-sec .yr{ color:var(--pink); font-weight:700; }
+  .birth-loading{ color:#999; font-style:italic; }
+  .review{ margin-top:18px; padding-top:16px; border-top:1px solid #e7e0f5; }
+  .review-q{ font-size:14px; font-weight:700; color:#555; margin-bottom:10px; }
+  .review-btns{ display:flex; gap:10px; }
+  .rv{ flex:1; margin:0; padding:11px; font-size:14px; box-shadow:none; }
+  .rv.yes{ background:linear-gradient(135deg,#3ec98a,#1fa86a); }
+  .rv.no{ background:linear-gradient(135deg,#ff7a7a,#e23b5a); }
+  .rv:hover{ box-shadow:0 8px 18px rgba(0,0,0,.18); }
+  .review-thanks{ margin-top:12px; font-size:14px; font-weight:700; color:var(--purple); display:none; }
+  .history{ margin-top:24px; display:none; }
+  .history-head{ display:flex; align-items:center; justify-content:space-between;
+    font-size:15px; font-weight:700; color:#444; margin-bottom:10px; }
+  .clear-btn{ width:auto; margin:0; padding:6px 12px; font-size:12px; font-weight:700;
+    background:#f0ebfa; color:#7b4dff; box-shadow:none; border-radius:9px; }
+  .clear-btn:hover{ background:#e7e0f5; transform:none; box-shadow:none; }
+  .hitem{ background:var(--soft); border-radius:12px; padding:12px 14px; margin-bottom:8px;
+    border-left:4px solid var(--purple); }
+  .hitem .top{ display:flex; justify-content:space-between; align-items:center; }
+  .hitem .hname{ font-weight:700; font-size:14px; color:#3a2f55; }
+  .hitem .hverdict{ font-weight:800; font-size:14px; }
+  .hitem .hverdict.rs{ color:var(--pink); }
+  .hitem .hverdict.single{ color:var(--purple); }
+  .hitem .hmeta{ font-size:12px; color:#888; margin-top:4px; }
+  .foot{ text-align:center; font-size:11px; color:#aaa; padding:0 24px 20px; line-height:1.8; }
+  .credit{ font-weight:700; font-size:13px; background:linear-gradient(135deg,#ff5c8a,#7b4dff);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    letter-spacing:1px; }
+  .err{ color:#e23; font-size:13px; margin-top:10px; text-align:center; display:none; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="head">
+      <h1>🔮 ဗေဒင် · Bay Din 🔮</h1>
+      <p>နာမည် · မွေးနေ့ · အကြိုက်ဆုံးအစားအစာ ထည့်ပါ</p>
+    </div>
+    <div class="body">
+      <label for="name">👤 နာမည်</label>
+      <input id="name" type="text" placeholder="ဥပမာ — Kaung Htet" />
+
+      <label for="dob">🎂 မွေးနေ့ (Date of Birth)</label>
+      <input id="dob" type="date" />
+
+      <label for="food">🍜 အကြိုက်ဆုံးအစားအစာ</label>
+      <input id="food" type="text" placeholder="ဥပမာ — မုန့်ဟင်းခါး" />
+
+      <button onclick="predict()">🔮 ဟောစာတမ်းကြည့်မယ်</button>
+      <div class="err" id="err">အကွက်အားလုံး ဖြည့်ပေးပါ 🙏</div>
+
+      <div class="result" id="result">
+        <div style="font-size:14px;color:#888">သင်၏ ဟောစာတမ်း —</div>
+        <div class="verdict" id="verdict"></div>
+        <div class="meter"><div id="bar"></div></div>
+        <div class="pct" id="pct"></div>
+        <div class="msg" id="msg"></div>
+        <div class="advice" id="advice"></div>
+
+        <div class="birth" id="birth">
+          <div class="birth-zodiac" id="birthZodiac"></div>
+          <div class="birth-sec" id="birthEvent"></div>
+          <div class="birth-sec" id="birthFamous"></div>
+        </div>
+
+        <div class="review" id="review">
+          <div class="review-q">ဒီဟောစာတမ်း မှန်လား? 🤔</div>
+          <div class="review-btns">
+            <button type="button" class="rv yes" onclick="review(true)">✅ မှန်တယ်</button>
+            <button type="button" class="rv no" onclick="review(false)">❌ မမှန်ဘူး</button>
+          </div>
+          <div class="review-thanks" id="reviewThanks"></div>
+        </div>
+      </div>
+
+      <div class="history" id="history">
+        <div class="history-head">
+          <span>📜 မှတ်တမ်း (History)</span>
+          <button type="button" class="clear-btn" onclick="clearHistory()">🗑️ ရှင်းမယ်</button>
+        </div>
+        <div id="historyList"></div>
+      </div>
+    </div>
+    <div class="foot">ပျော်စရာအတွက်သာ 🎈<br><span class="credit">✨ Developed by AKKW ✨</span></div>
+  </div>
+
+<script>
+// ===== CONFIG (Supabase) =====
+// Supabase Dashboard > Project Settings > Data API ထဲက တန်ဖိုးတွေ ထည့်ပါ။
+// ဗလာ "" ဖြစ်နေသ၍ cloud မသိမ်းဘဲ device history ပဲ အလုပ်လုပ်မယ်။
+const SUPABASE_URL      = "https://ejjbdnamopuvisuwlwks.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_SyF75tA1BYWd0UWcHZBT8w_XHCEl6IK";  // publishable key (public — RLS ကြောင့် INSERT only)
+const SUPABASE_TABLE    = "predictions";
+
+// input အတူတူဆို အဖြေ အမြဲတူအောင် — deterministic hash
+function hash(str){
+  let h = 5381;
+  for(let i=0;i<str.length;i++){ h = ((h<<5)+h) + str.charCodeAt(i); h |= 0; }
+  return Math.abs(h);
+}
+
+// အစားအစာအလိုက် အကြံပြုချက်
+const foodVibes = [
+  { k:["အချို","ကိတ်","cake","ice","sweet","ချို"], v:"အချိုကြိုက်သူဆို စိတ်နူးညံ့ပြီး ချစ်ခြင်းမှာ ပွင့်လင်းတယ်။ အဖော်ကို ဂရုစိုက်တတ်တဲ့သဘော။" },
+  { k:["စပ်","ငရုတ်","spicy","ချဉ်","သုပ်"], v:"အစပ်ကြိုက်သူဆို စိတ်ဓာတ်ပြင်းပြီး passionate — ချစ်ရင်အပြည့်အဝ ချစ်တတ်တယ်။" },
+  { k:["ခေါက်ဆွဲ","noodle","ခေါက်","ဟင်းခါး","khao","ကြာဇံ"], v:"ခေါက်ဆွဲကြိုက်သူဆို သစ္စာရှိပြီး ရေရှည်ဆက်ဆံရေးကို တန်ဖိုးထားတယ်။" },
+  { k:["ထမင်း","rice","ဟင်း"], v:"ထမင်းဟင်းကြိုက်သူဆို တည်ငြိမ်ပြီး အိမ်ထောင်သည်စရိုက် — ယုံကြည်စိတ်ချရတဲ့ partner။" },
+  { k:["ကြက်","အသား","meat","beef","pork","ဝက်","bbq","ကင်"], v:"အသားကြိုက်သူဆို ရဲရင့်ပြီး ဦးဆောင်တတ်တယ် — ဆက်ဆံရေးမှာ အားကိုးရတယ်။" },
+];
+function foodAdvice(food){
+  const f = food.toLowerCase();
+  for(const fv of foodVibes){ if(fv.k.some(x=>f.includes(x.toLowerCase()))) return fv.v; }
+  return "သင့်အကြိုက်ဆုံးအစားအစာက သင့်ကို ထူးခြားတဲ့ ဆွဲဆောင်မှုတစ်ခု ပေးထားတယ် — အဲဒါကို ယုံကြည်လိုက်ပါ။";
+}
+
+const rsMsgs = [
+  "ကြယ်တာရာတွေက ပြောနေတယ် — သင့်အနားမှာ တစ်ယောက်ယောက် ရှိနေပြီ/ရှိတော့မယ်။ 💕",
+  "သင့်ရဲ့ vibe က ချစ်ခြင်းနဲ့ ပြည့်နေတယ်။ နှလုံးသားက အလုပ်များနေတဲ့ ကာလ။ 💞",
+  "ဖွဲ့စည်းမှုပြည့်စုံတဲ့ စွမ်းအင် — couple energy အပြည့်ပါ။ ❤️",
+];
+const singleMsgs = [
+  "လောလောဆယ် ကြယ်တွေက သင့်ကို 'ကိုယ့်ကိုယ်ကို ချစ်ဖို့' အချိန်ပေးထားတယ်။ Single = လွတ်လပ်မှု။ ✨",
+  "သင့်ရဲ့ စွမ်းအင်က independent — အချိန်တန်ရင် မှန်ကန်တဲ့သူ ရောက်လာမယ်။ 🌟",
+  "အခုတော့ self-love season ပါ။ ကိုယ့်ဘဝကို အရင်ရှင်းရှင်းလင်းလင်း ပျော်ပါ။ 🦋",
+];
+
+function predict(){
+  const name = document.getElementById('name').value.trim();
+  const dob  = document.getElementById('dob').value.trim();
+  const food = document.getElementById('food').value.trim();
+  const err  = document.getElementById('err');
+
+  if(!name || !dob || !food){ err.style.display='block'; return; }
+  err.style.display='none';
+
+  const seed = hash(name.toLowerCase() + "|" + dob + "|" + food.toLowerCase());
+  const score = seed % 101; // 0..100
+  const isRS = score >= 50;
+
+  const res = document.getElementById('result');
+  const verdict = document.getElementById('verdict');
+  const bar = document.getElementById('bar');
+  const pct = document.getElementById('pct');
+  const msg = document.getElementById('msg');
+  const advice = document.getElementById('advice');
+
+  verdict.textContent = isRS ? "💞 RS 💞" : "💔 Single 💔";
+  verdict.className = "verdict " + (isRS ? "rs" : "single");
+  msg.textContent = isRS ? rsMsgs[seed % rsMsgs.length] : singleMsgs[seed % singleMsgs.length];
+  advice.innerHTML = "<b>🍽️ အစားအစာဟောစာတမ်း:</b> " + foodAdvice(food);
+  pct.textContent = "ချစ်ခြင်းစွမ်းအင် — " + score + "%";
+
+  // မွေးရက်အလိုက် ထူးခြားချက် (ရာသီခွင် + famous births + ဖြစ်ရပ်)
+  showBirthInfo(dob);
+
+  // review mark reset
+  document.getElementById('review').style.display='block';
+  const rt = document.getElementById('reviewThanks');
+  rt.style.display='none';
+  document.querySelectorAll('.rv').forEach(b=>{ b.disabled=false; b.style.opacity='1'; });
+
+  res.style.display='block';
+  bar.style.width='0';
+  setTimeout(()=>{ bar.style.width = score + "%"; }, 50);
+
+  // history ထဲ သိမ်းမယ် (device + cloud)
+  const entry = { name, dob, food, isRS, score, time: new Date().toLocaleString('en-GB') };
+  saveHistory(entry);
+  cloudSave(entry);
+}
+
+// ☁️ owner ရဲ့ Supabase table ထဲ private သိမ်းမယ်
+// RLS: anon က INSERT ပဲ ရတယ် (SELECT မရ) → သူငယ်ချင်းတွေ အချင်းချင်း data မမြင်ရ၊ owner ပဲ dashboard မှာ ဖတ်ရ
+function cloudSave(entry){
+  if(!SUPABASE_URL || !SUPABASE_ANON_KEY) return; // setup မလုပ်ရသေးရင် ကျော်
+  try{
+    fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`, {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify({
+        name: entry.name, dob: entry.dob, food: entry.food,
+        result: entry.isRS ? "RS" : "Single",
+        score: entry.score
+      })
+    }).catch(()=>{}); // ကွန်ရက်မရှိရင်လည်း app မပျက်အောင်
+  }catch(e){ /* ignore */ }
+}
+
+const HKEY = "rs_single_history";
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem(HKEY)) || []; }catch(e){ return []; }
+}
+function saveHistory(entry){
+  const list = loadHistory();
+  list.unshift(entry);                 // အသစ်ဆုံးကို အပေါ်ဆုံး
+  if(list.length > 50) list.length = 50; // ၅၀ ထက်မပို
+  localStorage.setItem(HKEY, JSON.stringify(list));
+  renderHistory();
+}
+function renderHistory(){
+  const list = loadHistory();
+  const box = document.getElementById('history');
+  const ul  = document.getElementById('historyList');
+  if(!list.length){ box.style.display='none'; return; }
+  box.style.display='block';
+  ul.innerHTML = list.map(h=>{
+    const cls = h.isRS ? 'rs' : 'single';
+    const label = h.isRS ? '💞 RS' : '💔 Single';
+    return `<div class="hitem">
+      <div class="top">
+        <span class="hname">👤 ${escapeHtml(h.name)}</span>
+        <span class="hverdict ${cls}">${label} · ${h.score}%</span>
+      </div>
+      <div class="hmeta">🍜 ${escapeHtml(h.food)} · 🎂 ${escapeHtml(h.dob)} · 🕒 ${escapeHtml(h.time)}</div>
+    </div>`;
+  }).join('');
+}
+function clearHistory(){
+  if(confirm('History အားလုံး ဖျက်မှာ သေချာလား?')){
+    localStorage.removeItem(HKEY);
+    renderHistory();
+  }
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ===== မွေးရက်အလိုက် ထူးခြားချက် (offline — internet မလို) =====
+const MONTHS = ["","ဇန်နဝါရီ","ဖေဖော်ဝါရီ","မတ်","ဧပြီ","မေ","ဇွန်","ဇူလိုင်","သြဂုတ်","စက်တင်ဘာ","အောက်တိုဘာ","နိုဝင်ဘာ","ဒီဇင်ဘာ"];
+
+// ရာသီခွင် ၁၂ ခု — စရိုက် + အဲ့ဒီရာသီ famous person (offline)
+const ZODIAC = [
+  { key:"cap", name:"♑ မကာရ (Capricorn)", range:[12,22,1,19],
+    trait:"ဇွဲကောင်းပြီး တာဝန်ယူတတ်သူ။ အောင်မြင်မှုကို စနစ်တကျ တည်ဆောက်တတ်တယ်။",
+    famous:["Isaac Newton (သိပ္ပံ)","Martin Luther King Jr.","Muhammad Ali (လက်ဝှေ့)","Stephen Hawking"] },
+  { key:"aqu", name:"♒ ကုမ် (Aquarius)", range:[1,20,2,18],
+    trait:"လွတ်လပ်စွာ တွေးခေါ်တတ်ပြီး ဆန်းသစ်တီထွင်တတ်တယ်။ လူသားချင်း စာနာတယ်။",
+    famous:["Abraham Lincoln","Charles Darwin","Cristiano Ronaldo (ဘောလုံး)","Oprah Winfrey"] },
+  { key:"pis", name:"♓ မိန် (Pisces)", range:[2,19,3,20],
+    trait:"စိတ်ကူးယဉ်ဆန်ပြီး အနုပညာ ခံစားမှုနက်တယ်။ သနားကြင်နာတတ်တယ်။",
+    famous:["Albert Einstein","Steve Jobs (Apple)","Rihanna","Justin Bieber"] },
+  { key:"ari", name:"♈ မိဿ (Aries)", range:[3,21,4,19],
+    trait:"ရဲရင့်ပြီး ဦးဆောင်တတ်တယ်။ စွမ်းအင်ပြည့်ဝပြီး အစပြုတတ်သူ။",
+    famous:["Leonardo da Vinci","Vincent van Gogh","Lady Gaga","Robert Downey Jr."] },
+  { key:"tau", name:"♉ ပြိဿ (Taurus)", range:[4,20,5,20],
+    trait:"တည်ငြိမ်ပြီး သစ္စာရှိတယ်။ အလှအပနဲ့ သက်တောင့်သက်သာကို မြတ်နိုးတယ်။",
+    famous:["William Shakespeare","Queen Elizabeth II","Mark Zuckerberg","David Beckham"] },
+  { key:"gem", name:"♊ မေထုန် (Gemini)", range:[5,21,6,20],
+    trait:"ဉာဏ်ရွှင်ပြီး စကားပြောကောင်းတယ်။ အပြောင်းအလဲ ကြိုက်ပြီး လိုက်လျောညီထွေ ရှိတယ်။",
+    famous:["Marilyn Monroe","John F. Kennedy","Johnny Depp","Angelina Jolie"] },
+  { key:"can", name:"♋ ကရကဋ် (Cancer)", range:[6,21,7,22],
+    trait:"စိတ်နူးညံ့ပြီး မိသားစုကို ချစ်တယ်။ ခံစားမှု နက်ရှိုင်းပြီး ဂရုစိုက်တတ်တယ်။",
+    famous:["Elon Musk (Tesla)","Lionel Messi (ဘောလုံး)","Tom Hanks","Nelson Mandela"] },
+  { key:"leo", name:"♌ သိဟ် (Leo)", range:[7,23,8,22],
+    trait:"ယုံကြည်မှုပြည့်ဝပြီး အလင်းရောင်ထဲမှာ တောက်ပတယ်။ ရက်ရောပြီး ဂုဏ်သိက္ခာရှိတယ်။",
+    famous:["Barack Obama","Napoleon Bonaparte","Madonna","Usain Bolt (အပြေး)"] },
+  { key:"vir", name:"♍ ကန် (Virgo)", range:[8,23,9,22],
+    trait:"စနစ်ကျပြီး အသေးစိတ် ဂရုစိုက်တတ်တယ်။ ကြိုးစားပြီး ပြီးပြည့်စုံအောင် လုပ်တတ်တယ်။",
+    famous:["Michael Jackson","Mother Teresa","Beyoncé","Freddie Mercury"] },
+  { key:"lib", name:"♎ တူ (Libra)", range:[9,23,10,22],
+    trait:"မျှတမှုကို မြတ်နိုးပြီး သဟဇာတ ဖြစ်အောင် ထိန်းတတ်တယ်။ ယဉ်ကျေးပြီး ဆွဲဆောင်မှုရှိတယ်။",
+    famous:["Mahatma Gandhi","John Lennon (Beatles)","Will Smith","Serena Williams (တင်းနစ်)"] },
+  { key:"sco", name:"♏ ဗြိစ္ဆာ (Scorpio)", range:[10,23,11,21],
+    trait:"စိတ်ဓာတ်ပြင်းပြီး နက်နဲတယ်။ သတ္တိရှိပြီး ဆုံးဖြတ်ချက် ခိုင်မာတယ်။",
+    famous:["Bill Gates (Microsoft)","Marie Curie (သိပ္ပံ)","Pablo Picasso","Leonardo DiCaprio"] },
+  { key:"sag", name:"♐ ဓနု (Sagittarius)", range:[11,22,12,21],
+    trait:"လွတ်လပ်မှုကို ချစ်ပြီး စွန့်စားရဲတယ်။ ရိုးသားပြီး အကောင်းမြင်တတ်တယ်။",
+    famous:["Walt Disney","Winston Churchill","Bruce Lee (ကင်းဖူး)","Taylor Swift"] },
+];
+
+function zodiacOf(m, d){
+  for(const z of ZODIAC){
+    const [sm, sd, em, ed] = z.range;
+    if((m===sm && d>=sd) || (m===em && d<=ed)) return z;
+  }
+  return ZODIAC[0]; // မကာရ (Dec/Jan လွန်)
+}
+
+// အသိများတဲ့ နေ့တွေအတွက် "ထိုနေ့တိုင်း" မွေးတဲ့ famous person (offline) — key "M-D"
+const FAMOUS_BY_DATE = {
+  "1-8":["1935 — Elvis Presley (ဂီတ)","1942 — Stephen Hawking (သိပ္ပံ)"],
+  "1-15":["1929 — Martin Luther King Jr."],
+  "1-17":["1942 — Muhammad Ali (လက်ဝှေ့)","1706 — Benjamin Franklin"],
+  "2-5":["1985 — Cristiano Ronaldo (ဘောလုံး)"],
+  "2-6":["1945 — Bob Marley (ဂီတ)"],
+  "2-12":["1809 — Abraham Lincoln","1809 — Charles Darwin"],
+  "2-24":["1955 — Steve Jobs (Apple)"],
+  "3-14":["1879 — Albert Einstein (သိပ္ပံ)"],
+  "3-1":["1994 — Justin Bieber (ဂီတ)"],
+  "4-15":["1452 — Leonardo da Vinci"],
+  "4-16":["1889 — Charlie Chaplin"],
+  "5-14":["1984 — Mark Zuckerberg (Facebook)"],
+  "6-1":["1926 — Marilyn Monroe"],
+  "6-24":["1987 — Lionel Messi (ဘောလုံး)"],
+  "6-28":["1971 — Elon Musk (Tesla/SpaceX)"],
+  "7-6":["1946 — George W. Bush","1935 — Dalai Lama (၁၄)"],
+  "8-4":["1961 — Barack Obama"],
+  "8-15":["1769 — Napoleon Bonaparte"],
+  "8-29":["1958 — Michael Jackson (ဂီတ)"],
+  "9-5":["1946 — Freddie Mercury (Queen)"],
+  "10-2":["1869 — Mahatma Gandhi"],
+  "10-9":["1940 — John Lennon (Beatles)"],
+  "10-28":["1955 — Bill Gates (Microsoft)"],
+  "11-11":["1974 — Leonardo DiCaprio"],
+  "11-30":["1874 — Winston Churchill","1835 — Mark Twain"],
+  "12-5":["1901 — Walt Disney"],
+  "12-13":["1989 — Taylor Swift (ဂီတ)"],
+  "12-25":["1642 — Isaac Newton (သိပ္ပံ)"],
+};
+
+async function showBirthInfo(dob){
+  const box = document.getElementById('birth');
+  const zEl = document.getElementById('birthZodiac');
+  const evEl = document.getElementById('birthEvent');
+  const fmEl = document.getElementById('birthFamous');
+  box.style.display = 'block';
+  evEl.style.display = 'block';
+  fmEl.style.display = 'block';
+
+  const parts = dob.split('-');           // YYYY-MM-DD
+  const m = parseInt(parts[1], 10);
+  const d = parseInt(parts[2], 10);
+  if(!m || !d){ box.style.display='none'; return; }
+
+  const z = zodiacOf(m, d);
+
+  // ၁. ရာသီခွင် (offline)
+  zEl.textContent = "🌌 သင့်ရာသီခွင်: " + z.name + "  ·  မွေးနေ့ " + d + " " + MONTHS[m];
+
+  // ၂. ရာသီခွင် စရိုက် (offline — "ထူးခြားချက်")
+  evEl.innerHTML = '<h4>✨ ' + d + ' ' + MONTHS[m] + ' — သင့်ရဲ့ ထူးခြားချက်</h4>' + escapeHtml(z.trait);
+
+  // ၃. famous person (offline) — ထိုနေ့တိုင်း ရှိရင် အဲ့ဒါ၊ မရှိရင် ရာသီခွင်အလိုက်
+  const key = m + "-" + d;
+  if(FAMOUS_BY_DATE[key]){
+    fmEl.innerHTML = '<h4>🎉 ' + d + ' ' + MONTHS[m] + ' မှာ မွေးတဲ့ famous person</h4><ul>'
+      + FAMOUS_BY_DATE[key].map(s=>'<li>'+escapeHtml(s)+'</li>').join('') + '</ul>';
+  } else {
+    fmEl.innerHTML = '<h4>🎉 ' + z.name.replace(/^\S+\s/,'') + ' ရာသီဖွား famous person</h4><ul>'
+      + z.famous.map(s=>'<li>'+escapeHtml(s)+'</li>').join('') + '</ul>';
+  }
+
+  // (bonus) internet ရှိရင် Wikipedia ကနေ ထိုနေ့တိုင်း မွေးသူ ပိုပြည့်စုံအောင် ထပ်ဖြည့်
+  try{
+    const url = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/all/${m}/${d}`;
+    const res = await fetch(url);
+    if(!res.ok) return;
+    const data = await res.json();
+    const births = (data.births || []).slice().sort((a,b)=>b.year-a.year).slice(0,5);
+    if(births.length){
+      fmEl.innerHTML = '<h4>🎉 ' + d + ' ' + MONTHS[m] + ' မှာ မွေးတဲ့ famous person 🌐</h4><ul>'
+        + births.map(b=>'<li><span class="yr">'+b.year+'</span> — '+escapeHtml(b.text.split('(')[0].trim())+'</li>').join('')
+        + '</ul>';
+    }
+  }catch(err){ /* offline ဆို အပေါ်က built-in data ပဲ ပြထားပြီးသား */ }
+}
+
+// စဖွင့်တာနဲ့ history ပြ
+renderHistory();
+
+function review(isCorrect){
+  const rt = document.getElementById('reviewThanks');
+  rt.textContent = isCorrect
+    ? "🎉 ကျေးဇူးတင်ပါတယ်! မှန်လို့ ဝမ်းသာပါတယ် 💞"
+    : "😅 ကျေးဇူးတင်ပါတယ်! ကြယ်တာရာတွေ တစ်ခါတလေ မှားတတ်ပါတယ် 🌟";
+  rt.style.display='block';
+  // နှိပ်ပြီးရင် ထပ်မနှိပ်ရအောင်
+  document.querySelectorAll('.rv').forEach(b=>{ b.disabled=true; b.style.opacity='.5'; });
+}
+</script>
+</body>
+</html>
