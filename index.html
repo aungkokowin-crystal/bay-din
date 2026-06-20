@@ -118,8 +118,6 @@
       <div class="result" id="result">
         <div style="font-size:14px;color:#888">သင်၏ ဟောစာတမ်း —</div>
         <div class="verdict" id="verdict"></div>
-        <div class="meter"><div id="bar"></div></div>
-        <div class="pct" id="pct"></div>
         <div class="msg" id="msg"></div>
         <div class="advice" id="advice"></div>
 
@@ -205,16 +203,13 @@ function predict(){
 
   const res = document.getElementById('result');
   const verdict = document.getElementById('verdict');
-  const bar = document.getElementById('bar');
-  const pct = document.getElementById('pct');
   const msg = document.getElementById('msg');
   const advice = document.getElementById('advice');
 
-  verdict.textContent = isRS ? "💞 RS 💞" : "💔 Single 💔";
+  verdict.textContent = isRS ? "You have RS 💞" : "You are single 💔";
   verdict.className = "verdict " + (isRS ? "rs" : "single");
   msg.textContent = isRS ? rsMsgs[seed % rsMsgs.length] : singleMsgs[seed % singleMsgs.length];
   advice.innerHTML = "<b>🍽️ အစားအစာဟောစာတမ်း:</b> " + foodAdvice(food);
-  pct.textContent = "ချစ်ခြင်းစွမ်းအင် — " + score + "%";
 
   // မွေးရက်အလိုက် ထူးခြားချက် (ရာသီခွင် + famous births + ဖြစ်ရပ်)
   showBirthInfo(dob);
@@ -226,8 +221,6 @@ function predict(){
   document.querySelectorAll('.rv').forEach(b=>{ b.disabled=false; b.style.opacity='1'; });
 
   res.style.display='block';
-  bar.style.width='0';
-  setTimeout(()=>{ bar.style.width = score + "%"; }, 50);
 
   // history ထဲ သိမ်းမယ် (device + cloud)
   const entry = { name, dob, food, isRS, score, time: new Date().toLocaleString('en-GB') };
